@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -21,7 +22,9 @@ type Entry struct {
 // CSV file resides in the current directory
 var CSV_FILE = "csv.data"
 
-var data = []Entry{}
+type PhoneBook []Entry
+
+var data = PhoneBook{}
 var index map[string]int
 
 func readCSVFile(filepath string) error {
@@ -138,6 +141,7 @@ func search(key string) *Entry {
 }
 
 func list() {
+	sort.Sort(data)
 	for _, v := range data {
 		fmt.Println(v)
 	}
@@ -147,6 +151,24 @@ func matchTel(s string) bool {
 	t := []byte(s)
 	re := regexp.MustCompile(`\d+$`)
 	return re.Match(t)
+}
+
+// Implement sort.Interface
+func (a PhoneBook) Len() int {
+	return len(a)
+}
+
+// First based on surname. If they have the same surname
+// take into account the name.
+func (a PhoneBook) Less(i, j int) bool {
+	if a[i].Surname == a[j].Surname {
+		return a[i].Name < a[j].Name
+	}
+	return a[i].Surname < a[j].Surname
+}
+
+func (a PhoneBook) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
 }
 
 func main() {
