@@ -171,6 +171,32 @@ func (a PhoneBook) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 
+// Setup CSV file
+func setCSVFile() error {
+	filepath := os.Getenv("PHONEBOOK")
+	if filepath != "" {
+		CSV_FILE = filepath
+	}
+
+	_, err := os.Stat(CSV_FILE)
+	if err != nil {
+		fmt.Println("Creating", CSV_FILE)
+		f, err := os.Create(CSV_FILE)
+		if err != nil {
+			f.Close()
+			return err
+		}
+		f.Close()
+	}
+
+	fileInfo, err := os.Stat(CSV_FILE)
+	mode := fileInfo.Mode()
+	if !mode.IsRegular() {
+		return fmt.Errorf("%s not a regular file", CSV_FILE)
+	}
+	return nil
+}
+
 func main() {
 	arguments := os.Args
 	if len(arguments) == 1 {
@@ -179,35 +205,17 @@ func main() {
 		return
 	}
 
-	// If the CSV_FILE does not exist, create an empty one
-	_, err := os.Stat(CSV_FILE)
-	// If err is not nil, it means that the file does not exist
-	if err != nil {
-		fmt.Println("Creating", CSV_FILE, "...")
-		f, err := os.Create(CSV_FILE)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		f.Close()
-	}
-
-	fileInfo, err := os.Stat(CSV_FILE)
-	// Is it a regular file?
-	mode := fileInfo.Mode()
-	if !mode.IsRegular() {
-		fmt.Println(CSV_FILE, "not a regular file!")
-		return
-	}
-
-	err = readCSVFile(CSV_FILE)
-	if err != nil {
+	if err := setCSVFile(); err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	err = createIndex()
-	if err != nil {
+	if err := readCSVFile(CSV_FILE); err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if err := createIndex(); err != nil {
 		fmt.Println("Cannot create index.")
 		return
 	}
