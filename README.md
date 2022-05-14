@@ -1,3 +1,3 @@
 ### Phonebook
 
-A basic phonebook application in Go + Cobra.
+A basic phonebook application in Go as a web service.
